@@ -74,6 +74,15 @@ def format_klines(klines):
 		
 	return formatedList
 		
+
+def format_Lowest_Ask(askOrderBook):
+	
+	price = askOrderBook[0][0]
+	priceF = price.encode("utf-8")
+	priceFFloat = float(priceF)	
+	return priceFFloat
+
+
 def main():
 	print("Start")
 	api_key = "6X3oPrSmRanw9VwBGs3fv8lwl0ygFMvpj7ydKmTxvZ206G6AgugiexNjORC9n09nj"
@@ -101,7 +110,7 @@ def main():
 	
 		klines1 = client.get_historical_klines("BTCUSDT", Client.KLINE_INTERVAL_15MINUTE, "15 minute ago UTC")
 		formatedklines1 = format_klines(klines1)
-		
+		#print formatedklines1
 		price_t = formatedklines1[0][5]
 		#formated_klines40 = format_klines(klines40)
 		ema_t12 = ema(price_t,12,ema_t12)
@@ -114,6 +123,21 @@ def main():
 		print("ema32 = %f" %(ema_t32))
 		print("Average Price= %f" %(price_t))
 		
+		order_book = client.get_order_book(symbol='BTCUSDT')
+		asks = order_book['asks']
+		bids = order_book['bids']
+
+		buyTime = ""
+		#print(order_book)	
+		#print("here")
+		#print(asks)
+
+		bid_price = format_Lowest_Ask(bids)
+		ask_price = format_Lowest_Ask(asks)
+		 
+		print ("Bid Price: %f" %(bid_price))
+		print ("Ask Price: %f" %(ask_price))
+
 		ordersFile = open("orders.txt","a+")
 		ordersFile.write("_____________________________________________________________________________\n")
 		ordersFile.write("Time: %d \n" %(formatedklines1[0][0]))
@@ -121,24 +145,34 @@ def main():
 		ordersFile.write("ema32 = %f\n" %(ema_t32))
 
 		if (ema_t12 > ema_t32 and bought == False):
-			print ("BUY")
-			ordersFile.write("BUY\n")
-			buyPrice = price_t
+			print ("Action: BUY")
+			ordersFile.write("BUY at %f \n" %(ask_price))
+			buyPrice = ask_price
 			bought = True
+			buyTime = datetime.datetime.now()
+
 
 		elif (ema_t12 < ema_t32 and bought == True):
-			print("SOLD")
-			ordersFile.write("SOLD\n")	
-			sellPrice = price_t
+
+			sellPrice = bid_price
 			balance = sellPrice - buyPrice
+			print("Action: SOLD")
+			ordersFile.write("BOUGHT at %f and SOLD at %f\n" %(buyPrice,sellPrice))	
 			bought = False
 
 		else:
-			print("none")
+			print("Action: none")
 			ordersFile.write("none\n")
 
+			if(bought == True):
+				print(buyTime)
+				print ("Bought at %f" %(buyPrice))
+
+				
+		print ("Balance: %f" %(balance))
+
 		ordersFile.close()	
-		time.sleep(60*15)	
+		time.sleep(15*60)	
 
 
 			
