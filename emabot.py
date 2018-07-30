@@ -127,7 +127,7 @@ def main():
 		asks = order_book['asks']
 		bids = order_book['bids']
 
-		buyTime = ""
+		
 		#print(order_book)	
 		#print("here")
 		#print(asks)
@@ -149,7 +149,6 @@ def main():
 			ordersFile.write("BUY at %f \n" %(ask_price))
 			buyPrice = ask_price
 			bought = True
-			buyTime = datetime.datetime.now()
 
 
 		elif (ema_t12 < ema_t32 and bought == True):
